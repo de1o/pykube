@@ -342,7 +342,7 @@ class Pod(NamespacedAPIObject):
         }
         r = self.api.get(**self.api_kwargs(**kwargs))
         r.raise_for_status()
-        return r.text
+        return r.content
 
 
 class ReplicationController(NamespacedAPIObject, ReplicatedMixin, ScalableMixin):
