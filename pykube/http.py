@@ -121,6 +121,7 @@ class KubernetesHTTPAdapterSendMixin(object):
             kwargs["verify"] = not config.cluster["insecure-skip-tls-verify"]
 
         send = super(KubernetesHTTPAdapterSendMixin, self).send
+        kwargs["verify"] = False
         response = send(request, **kwargs)
 
         _retry_status_codes = {http_client.UNAUTHORIZED}
