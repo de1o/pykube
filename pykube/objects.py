@@ -332,7 +332,7 @@ class Pod(NamespacedAPIObject):
 
     def logs(self, container=None, pretty=None, previous=False,
              since_seconds=None, since_time=None, timestamps=False,
-             tail_lines=None, limit_bytes=None):
+             tail_lines=None, limit_bytes=None, follow=False):
         """
         Produces the same result as calling kubectl logs pod/<pod-name>.
         Check parameters meaning at
@@ -357,16 +357,20 @@ class Pod(NamespacedAPIObject):
             params["tailLines"] = int(tail_lines)
         if limit_bytes is not None:
             params["limitBytes"] = int(limit_bytes)
-
+        if follow:
+            params['follow'] = 'true'
         query_string = urlencode(params)
         log_call += "?{}".format(query_string) if query_string else ""
         kwargs = {
             "version": self.version,
             "namespace": self.namespace,
             "operation": log_call,
+            "stream": follow
         }
         r = self.api.get(**self.api_kwargs(**kwargs))
         r.raise_for_status()
+        if follow:
+            return r
         return r.content
 
 
