@@ -6,7 +6,6 @@ import base64
 import copy
 import tempfile
 import os
-import hashlib
 
 import yaml
 
@@ -142,7 +141,7 @@ class KubeConfig(object):
                 cs[cr["name"]] = c = copy.deepcopy(cr["cluster"])
                 if "server" not in c:
                     c["server"] = "http://localhost"
-                BytesOrFile.maybe_set(c["server"], c, "certificate-authority")
+                BytesOrFile.maybe_set(c, "certificate-authority")
             self._clusters = cs
         return self._clusters
 
@@ -156,8 +155,8 @@ class KubeConfig(object):
             if "users" in self.doc:
                 for ur in self.doc["users"]:
                     us[ur["name"]] = u = copy.deepcopy(ur["user"])
-                    BytesOrFile.maybe_set(self.cluster['server'], u, "client-certificate")
-                    BytesOrFile.maybe_set(self.cluster['server'], u, "client-key")
+                    BytesOrFile.maybe_set(u, "client-certificate")
+                    BytesOrFile.maybe_set(u, "client-key")
             self._users = us
         return self._users
 
@@ -218,16 +217,11 @@ class BytesOrFile(object):
     """
 
     @classmethod
-    def maybe_set(cls, server, d, key):
+    def maybe_set(cls, d, key):
         file_key = key
         data_key = "{}-data".format(key)
         if data_key in d:
-            data = d[data_key]
-            filename = hashlib.sha224(server+data_key).hexdigest()
-            filename = os.path.join(tempfile.tempdir, filename)
-            with open(filename, 'wb') as f:
-                f.write(base64.b64decode(data))
-            d[file_key] = cls(data=d[data_key], filename=filename)
+            d[file_key] = cls(data=d[data_key])
             del d[data_key]
         elif file_key in d:
             d[file_key] = cls(filename=d[file_key])
@@ -242,9 +236,9 @@ class BytesOrFile(object):
         """
         self._filename = None
         self._bytes = None
-        # if filename is not None and data is not None:
-        #     raise TypeError("filename or data kwarg must be specified, not both")
-        if filename is not None:
+        if filename is not None and data is not None:
+            raise TypeError("filename or data kwarg must be specified, not both")
+        elif filename is not None:
             if not os.path.isfile(filename):
                 raise exceptions.PyKubeError("'{}' file does not exist".format(filename))
             self._filename = filename
