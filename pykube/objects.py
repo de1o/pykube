@@ -368,7 +368,6 @@ class Pod(NamespacedAPIObject):
             "stream": follow
         }
         r = self.api.get(**self.api_kwargs(**kwargs))
-        r.raise_for_status()
         if follow:
             return r
         return r.content
