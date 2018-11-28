@@ -148,20 +148,35 @@ class WatchQuery(BaseQuery):
         params = {"watch": "true"}
         if self.resource_version is not None:
             params["resourceVersion"] = self.resource_version
-        kwargs = {
-            "url": self._build_api_url(params=params),
-            "stream": True,
-        }
-        if self.namespace is not all_:
-            kwargs["namespace"] = self.namespace
-        if self.api_obj_class.version:
-            kwargs["version"] = self.api_obj_class.version
-        r = self.api.get(**kwargs)
-        self.api.raise_for_status(r)
-        WatchEvent = namedtuple("WatchEvent", "type object")
-        for line in r.iter_lines():
-            we = json.loads(line.decode("utf-8"))
-            yield WatchEvent(type=we["type"], object=self.api_obj_class(self.api, we["object"]))
+        flag = 1
+        import datetime
+        while True:
+            if flag == 1:
+                print("%s first watch connect" % datetime.datetime.now().strftime('%Y-%m-%d/%H:%M:%S'))
+            elif flag > 1:
+                print("%s watch reconnect" % datetime.datetime.now().strftime('%Y-%m-%d/%H:%M:%S'))
+
+            try:
+                kwargs = {
+                    "url": self._build_api_url(params=params),
+                    "stream": True,
+                }
+                if self.namespace is not all_:
+                    kwargs["namespace"] = self.namespace
+                if self.api_obj_class.version:
+                    kwargs["version"] = self.api_obj_class.version
+                r = self.api.get(**kwargs)
+                self.api.raise_for_status(r)
+                WatchEvent = namedtuple("WatchEvent", "type object")
+                for line in r.iter_lines():
+                    we = json.loads(line.decode("utf-8"))
+                    obj = we['object']
+                    if 'metadata' in obj and 'resourceVersion' in obj['metadata']:
+                        self.resource_version = obj['metadata']['resourceVersion']
+                    yield WatchEvent(type=we["type"], object=self.api_obj_class(self.api, we["object"]))
+            finally:
+                params['metadata.resourceVersion'] = self.resource_version
+                flag += 1
 
     def __iter__(self):
         return iter(self.object_stream())
