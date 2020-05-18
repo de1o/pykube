@@ -2,9 +2,10 @@ import copy
 import json
 import os.path as op
 from inspect import getmro
-import six
 
+import six
 from six.moves.urllib.parse import urlencode
+
 from .exceptions import ObjectDoesNotExist
 from .mixins import ReplicatedMixin, ScalableMixin
 from .query import Query
@@ -476,3 +477,9 @@ class PodSecurityPolicy(APIObject):
     version = "extensions/v1beta1"
     endpoint = "podsecuritypolicies"
     kind = "PodSecurityPolicy"
+
+class PodDisruptionBudget(APIObject):
+
+    version = "policy/v1beta1"
+    endpoint = "poddisruptionbudgets"
+    kind = "PodDisruptionBudget"
