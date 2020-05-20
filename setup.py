@@ -1,7 +1,6 @@
 import sys
 
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 with open("README.rst") as fp:
     long_description = fp.read()
@@ -20,7 +19,7 @@ if sys.version_info < (3,):
 
 setup(
     name="pykube",
-    version="0.19.1.yz.1",
+    version="0.19.1.yz.3",
     description="Python client library for Kubernetes",
     long_description=long_description,
     author="Eldarion, Inc.",
