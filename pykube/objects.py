@@ -478,7 +478,7 @@ class PodSecurityPolicy(APIObject):
     endpoint = "podsecuritypolicies"
     kind = "PodSecurityPolicy"
 
-class PodDisruptionBudget(APIObject):
+class PodDisruptionBudget(NamespacedAPIObject):
 
     version = "policy/v1beta1"
     endpoint = "poddisruptionbudgets"
