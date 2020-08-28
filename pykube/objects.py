@@ -11,16 +11,31 @@ from .mixins import ReplicatedMixin, ScalableMixin
 from .query import Query
 from .utils import obj_merge
 
+try:
+    from greenlet import getcurrent as get_ident
+except ImportError:
+    try:
+        from thread import get_ident
+    except ImportError:
+        from _thread import get_ident
+
 
 class ObjectManager(object):
+
+    _api_obj_cls = {}
+
     def __call__(self, api, namespace=None):
-        if namespace is None and NamespacedAPIObject in getmro(self.api_obj_class):
+        ident = get_ident()
+        api_obj_class = self._api_obj_cls.get(ident)
+        if namespace is None and NamespacedAPIObject in getmro(api_obj_class):
             namespace = api.config.namespace
-        return Query(api, self.api_obj_class, namespace=namespace)
+        return Query(api, api_obj_class, namespace=namespace)
 
     def __get__(self, obj, api_obj_class):
         assert obj is None, "cannot invoke objects on resource object."
-        self.api_obj_class = api_obj_class
+        ident = get_ident()
+        self._api_obj_cls[ident] = api_obj_class
+
         return self
 
 

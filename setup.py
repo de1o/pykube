@@ -19,7 +19,7 @@ if sys.version_info < (3,):
 
 setup(
     name="pykube",
-    version="0.19.1.yz.3",
+    version="0.19.1.yz.5",
     description="Python client library for Kubernetes",
     long_description=long_description,
     author="Eldarion, Inc.",
